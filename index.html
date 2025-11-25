@@ -11,16 +11,19 @@
 			src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"
 		></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.30.1/moment.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 	</head>
 	<body>
 		<div x-data="filtro">
-			<form>
+			<form @submit.prevent="submit()">
 				<input type="text" x-model="form.nome_parte"/>
 				<input type="date" x-model="form.data_publicacao" />
 				<button type="submit"">Pesquisar</button>
 			</form>
 			<div>
-				<span>texto</span>
+				<template x-for="log in logs">
+                    <li x-text="log"></li>
+                </template>
 			</div>
 		</div>
 
@@ -32,9 +35,39 @@
                         data_publicacao: moment().format('YYYY-MM-DD'),
                     },
 
-                    logs: ['Log 1', 'Log 2', 'Log 3'],
+                    logs: [],
+
+                    publicacoes: [],
+
+                    submit() {
+                        this.pesquisar();
+                        this.filtrar();
+                        this.salvar();
+                    },
+
+                    /** Pesquisar publicações */
+                    pesquisar() {
+                        this.logs.push(`Pesquisando publicações para ${this.form.nome_parte} na data ${this.form.data_publicacao}...`);
+
+                        axios.get('https://comunicaapi.pje.jus.br/api/v1/comunicacao', {
+                            nomeParte: this.form.nome_parte,
+                            dataDisponibilizacaoInicio: this.form.data_publicacao,
+                            dataDisponibilizacaoFim: this.form.data_publicacao,
+                        })
+                            .then(response => {
+                                this.publicacoes = response.data.items;
+                            })
+                            .catch(error => {
+                                this.logs.push(`Erro ao pesquisar publicações: ${error}`);
+                            });
+                    },
+
+                    filtrar() {
+                        this.logs.push(`Filtrando publicações...`);
+                    },
 
 					salvar() {
+                        this.logs.push(`Salvando em arquivo docx...`);
 						const doc = new docx.Document({
 							sections: [
 								{
@@ -61,6 +94,8 @@
 						docx.Packer.toBlob(doc).then((blob) => {
 							saveAs(blob, "publicações.docx");
 						});
+
+                        this.logs.push(`Concluido!`);
 					},
 				}));
 			});
