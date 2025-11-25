@@ -34,36 +34,66 @@
                         nome_parte: "NOVA IGUACU",
                         data_publicacao: moment().format('YYYY-MM-DD'),
                     },
-
                     logs: [],
-
                     publicacoes: [],
+                    publicacoes_filtradas: [],
 
-                    submit() {
-                        this.pesquisar();
+                    async submit() {
+                        await this.pesquisar();
                         this.filtrar();
-                        this.salvar();
+                        //this.salvar();
                     },
 
                     /** Pesquisar publicações */
-                    pesquisar() {
+                    async pesquisar() {
                         this.logs.push(`Pesquisando publicações para ${this.form.nome_parte} na data ${this.form.data_publicacao}...`);
 
-                        axios.get('https://comunicaapi.pje.jus.br/api/v1/comunicacao', {
-                            nomeParte: this.form.nome_parte,
-                            dataDisponibilizacaoInicio: this.form.data_publicacao,
-                            dataDisponibilizacaoFim: this.form.data_publicacao,
-                        })
-                            .then(response => {
-                                this.publicacoes = response.data.items;
-                            })
-                            .catch(error => {
-                                this.logs.push(`Erro ao pesquisar publicações: ${error}`);
+                        const limite = 100;
+                        let pagina = 1;
+                        let items = [];
+
+                        do {
+                            let response = await axios.get('https://comunicaapi.pje.jus.br/api/v1/comunicacao', {
+                                params: {
+                                    nomeParte: this.form.nome_parte,
+                                    dataDisponibilizacaoInicio: this.form.data_publicacao,
+                                    dataDisponibilizacaoFim: this.form.data_publicacao,
+                                    pagina: pagina
+                                }
                             });
+
+                            items = response.data.items;
+                            this.publicacoes.push(...items);
+                            ++pagina
+                        } while (items.length === 0 || items.length === limite);
+                        this.logs.push(`Encontradas ${this.publicacoes.length} publicações.`);
                     },
 
                     filtrar() {
                         this.logs.push(`Filtrando publicações...`);
+
+                        const keywords = ['procuradoria', 'prefeitura', 'municipio'];
+
+                        this.publicacoes_filtradas = this.publicacoes.filter(pub => {
+                            return pub.destinatarios.some(dest => {
+
+                                const nome = dest.nome.toLowerCase()
+                                    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+                                    .replace('-', ' ');
+
+                                const input = this.form.nome_parte.toLowerCase()
+                                    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+                                    .replace('-', ' ');
+
+                                if(!nome.includes(input)) {
+                                    return false;
+                                }
+
+                                return keywords.some(keyword => nome.includes(keyword));
+                            })
+                        })
+
+                        this.logs.push(`${this.publicacoes_filtradas.length} publicações filtradas...`);
                     },
 
 					salvar() {
