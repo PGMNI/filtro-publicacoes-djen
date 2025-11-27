@@ -10,17 +10,26 @@
 </head>
 <body>
     <main class="container" x-data="app">
-        <article>
+        <article id="card">
+            <hgroup>
+                <h2>Filtro de Publicações</h2>
+                <p>Filtra publicações do DJEN por nome da parte e palavras-chave</p>
+            </hgroup>
+            <hr>
             <!-- form -->
             <form role="search" @submit.prevent="submit()">
                 <input name="nome_parte" type="search" placeholder="Nome da Parte" x-model="form.nome_parte" />
                 <input type="submit" value="Pesquisar" />
             </form>
 
+            <div>
+                <label for="data_publicacao">Data da publicação</label>
+                <input type="date" name="data_publicacao" x-model="form.data_publicacao" />
+            </div>
 
-            <div class="col-12">
-                <label for="data_publicacao" class="form-label">Data da publicação</label>
-                <input class="form-control" type="date" name="data_publicacao" x-model="form.data_publicacao" />
+            <div>
+                <label for="keywords">Palavras-chave</label>
+                <input type="text" :value="keywords.join(', ')" disabled/>
             </div>
 
             <!-- logs -->
@@ -31,7 +40,9 @@
 
             <article class="log-box" id="box">
                 <template x-for="log in logs">
+                    ✓
                     <p x-text="log" class="col-12 mt-1 log"></p>
+                    <hr>
                 </template>
             </article>
         </article>

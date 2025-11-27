@@ -11,6 +11,7 @@ document.addEventListener("alpine:init", () => {
             nome_parte: "NOVA IGUACU",
             data_publicacao: moment().format('YYYY-MM-DD'),
         },
+        keywords: ['procuradoria', 'prefeitura', 'municipio'],
         logs: [],
         publicacoes: [],
         publicacoes_filtradas: [],
@@ -27,7 +28,7 @@ document.addEventListener("alpine:init", () => {
 
         /** Pesquisar publicações */
         async pesquisar() {
-            this.logs.push(`Pesquisando publicações para ${this.form.nome_parte} na data ${this.form.data_publicacao}`);
+            this.logs.push(`Pesquisando publicações para ${this.form.nome_parte} na data ${moment(this.form.data_publicacao).format('DD/MM/YYYY')}`);
 
             const limite = 100;
             let pagina = 1;
@@ -116,7 +117,7 @@ document.addEventListener("alpine:init", () => {
 
             const converter = window.htmlDocx.asBlob;
             const docxBlob = await converter(html);
-            fileSaver.saveAs(docxBlob, "teste.docx");
+            fileSaver.saveAs(docxBlob, `publicações-${moment().format('DD-MM-YYYY')}.docx`);
 
             this.logs.push(`Concluído!`);
         },
