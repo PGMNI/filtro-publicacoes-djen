@@ -99,7 +99,7 @@ document.addEventListener("alpine:init", () => {
                         <span><strong>Parte(s): </strong></span><br>
                         ${pub.destinatarios.map( dest => `<span>${dest.nome}<span><br>`).join('')}
                         ${pub.destinatarioadvogados.length ? `<span><strong>Advogado(s): </strong></span><br>` : ''}
-                        ${pub.destinatarioadvogados.length ? pub.destinatarioadvogados.map( dest => `<span>${dest.advogado.nome}<span><br>`).join('') : ''}
+                        ${pub.destinatarioadvogados.length ? pub.destinatarioadvogados.map( dest => `<span>${dest.advogado.nome} - OAB ${dest.advogado.uf_oab}-${dest.advogado.numero_oab}<span><br>`).join('') : ''}
                         <br>
                         <section">${pub.texto}</section><br>
                         <br>
