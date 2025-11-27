@@ -1,0 +1,25 @@
+@import url("https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css");
+
+
+
+.log-box {
+    background-color: #13171F;
+    height: 400px;
+    border-radius: 6px;
+    padding: 24px;
+    overflow-y: scroll;
+}
+
+/* .log-title {
+    color: white;
+    font-family: 'Courier New', Courier, monospace;
+    font-weight: bolder;
+    font-size: 15px;
+}
+
+.log {
+    color: white;
+    font-family: 'Courier New', Courier, monospace;
+    font-weight: bold;
+    font-size: 12px;
+} */
