@@ -86,7 +86,7 @@ document.addEventListener("alpine:init", () => {
 
             let blocks = '';
 
-            this.publicacoes.forEach(pub => {
+            this.publicacoes_filtradas.forEach(pub => {
                 blocks += `
                     <p>
                         <span class="publicacao-title">Processo ${pub.numeroprocessocommascara}</span><br>
