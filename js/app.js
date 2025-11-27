@@ -89,11 +89,13 @@ document.addEventListener("alpine:init", () => {
             this.publicacoes.forEach(pub => {
                 blocks += `
                     <p>
-                        <span style="color: #004BCB"><strong>Processo ${pub.numeroprocessocommascara}</strong></span><br>
+                        <span class="publicacao-title">Processo ${pub.numeroprocessocommascara}</span><br>
                         <span><strong>Órgão: </strong> ${pub.nomeOrgao}</span><br>
                         <span><strong>Data de disponibilização: </strong>${moment(pub.data_disponibilizacao).format('DD/MM/YYYY')}</span><br>
                         <span><strong>Tipo de comunicação: </strong>${pub.tipoComunicacao}</span><br>
                         <span><strong>Meio: </strong> ${pub.meiocompleto}</span><br>
+                        ${pub.link ? `<span><strong>Inteiro teor: </strong></span>` : ''}
+                        ${pub.link ? `<a href="${pub.link}">Clique aqui</a><br>` : ''}
                         <span><strong>Parte(s): </strong></span><br>
                         ${pub.destinatarios.map( dest => `<span>${dest.nome}<span><br>`).join('')}
                         ${pub.destinatarioadvogados.length ? `<span><strong>Advogado(s): </strong></span><br>` : ''}
@@ -109,8 +111,22 @@ document.addEventListener("alpine:init", () => {
                 <html lang="en">
                 <head>
                     <meta charset="UTF-8">
+                    <style>
+                        .publicacao-title {
+                            color: #004BCB !important;
+                            font-weight: bold;
+                        }
+
+                        strong {
+                            color: #0A243B;
+                        }
+
+                        a {
+                            text-decoration: none;
+                        }
+                    </style>
                 </head>
-                <body style="font-family: 'Calibri Light'; font-size: 13px">
+                <body style="font-family: 'Calibri Light'; font-size: 13px; color: #4C4C4C">
                     ${ blocks }
                 </body>
                 </html>`;

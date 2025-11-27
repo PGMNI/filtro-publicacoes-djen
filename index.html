@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📜</text></svg>">
     <title>Filtro de publicações</title>
     <script src="https://cdn.jsdelivr.net/npm/html-docx-js/dist/html-docx.js"></script>
     <link rel="stylesheet" href="/css/styles.css">
@@ -35,7 +36,6 @@
             <!-- logs -->
              <div>
                 <progress x-show="loading" />
-
              </div>
 
             <article class="log-box" id="box">
@@ -47,12 +47,5 @@
             </article>
         </article>
     </main>
-
-    <script>
-        document.addEventListener("DOMContentLoaded", () => {
-            const box = document.getElementById("box");
-            box.scrollTop = box.scrollHeight;
-        });
-    </script>
 </body>
 </html>
