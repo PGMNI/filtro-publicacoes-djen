@@ -19,5 +19,9 @@ main {
     height: 400px;
     border-radius: 6px;
     padding: 24px;
-    overflow-y: scroll;
+    overflow-y: auto;
+}
+
+.log {
+    font-family: 'Courier New', Courier, monospace;
 }

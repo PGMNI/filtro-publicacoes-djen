@@ -2,70 +2,71 @@ import Alpine from 'https://cdn.jsdelivr.net/npm/alpinejs@3.15.2/dist/module.esm
 import * as docx from 'https://cdn.jsdelivr.net/npm/docx@9.5.1/+esm'
 import fileSaver from 'https://cdn.jsdelivr.net/npm/file-saver@2.0.5/+esm'
 import moment from 'https://cdn.jsdelivr.net/npm/moment@2.30.1/+esm'
-import axios from 'https://cdn.jsdelivr.net/npm/axios@1.13.2/+esm'
 import { toDocx } from 'https://cdn.jsdelivr.net/npm/docshift@0.0.73/+esm'
+import Logger from './logger.js'
+import djen from './djen.js'
+import { filtrarPublicacoes } from  './utils.js'
 
 document.addEventListener("alpine:init", () => {
     Alpine.data("app", () => ({
         form: {
-            nome_parte: "NOVA IGUACU",
-            data_publicacao: moment().format('YYYY-MM-DD'),
+            nomeParte: "NOVA IGUACU",
+            dataPublicacao: moment().format('YYYY-MM-DD'),
         },
+        logger: Alpine.reactive(new Logger()),
         keywords: ['procuradoria', 'prefeitura', 'municipio'],
-        logs: [],
         publicacoes: [],
-        publicacoes_filtradas: [],
+        publicacoesFiltradas: [],
         loading: false,
 
         async submit() {
-            this.logs = [];
             this.loading = true;
-            await this.pesquisar();
-            this.filtrar();
-            await this.salvar();
-            this.loading = false;
+            this.logger.clear()
+
+            try {
+                /** Pesquisar */
+                this.logger.add('⏳',`Pesquisando publicações para ${this.form.nomeParte} em ${moment(this.form.dataPublicacao).format('DD/MM/YYYY')}`);
+                await this.pesquisar();
+                if(this.publicacoes.length === 0) return this.logger.add('⛔',`Nenhuma publicação encontrada`);
+                this.logger.add('ℹ️',`${this.publicacoes.length} publicações encontradas`);
+    
+                /** Filtrar */
+                this.logger.add('⏳', `Filtrando publicações`);
+                this.publicacoesFiltradas = filtrarPublicacoes(this.publicacoes, this.keywords, this.form.nomeParte);
+                if(this.publicacoesFiltradas.length === 0) return this.logger.add('⛔',`Nenhuma publicação filtrada`);
+                this.logger.add('ℹ️', `${this.publicacoesFiltradas.length} publicações filtradas`);
+    
+                /** Salvar */
+                this.logger.add('⏳', `Salvando em arquivo .docx`);
+                await this.salvar();
+                this.logger.add('✅', `Concluído!`);
+            } finally {
+                this.loading = false;
+            }
         },
 
-        /** Pesquisar publicações */
         async pesquisar() {
-            this.logs.push(`Pesquisando publicações para ${this.form.nome_parte} na data ${moment(this.form.data_publicacao).format('DD/MM/YYYY')}`);
-
-            const limite = 100;
-            let pagina = 1;
-            let items = [];
-            this.publicacoes = [];
-
-            do {
-                let response = await axios.get('https://comunicaapi.pje.jus.br/api/v1/comunicacao', {
-                    params: {
-                        nomeParte: this.form.nome_parte,
-                        dataDisponibilizacaoInicio: this.form.data_publicacao,
-                        dataDisponibilizacaoFim: this.form.data_publicacao,
-                        pagina: pagina
-                    }
+            try {
+                this.publicacoes = await djen.publicacoes({ 
+                    nomeParte: this.form.nomeParte,
+                    dataDisponibilizacaoInicio: this.form.dataPublicacao,
+                    dataDisponibilizacaoFim: this.form.dataPublicacao,
                 });
-
-                items = response.data.items;
-                this.publicacoes.push(...items);
-                ++pagina
-            } while (items.length === 0 || items.length === limite);
-
-            this.logs.push(`${this.publicacoes.length} publicações encontradas`);
+            } catch (err) {
+                this.logger.add('⛔', "Erro ao consultar publicações, tente novamente");
+                throw(err);
+            }
         },
 
         filtrar() {
-            this.logs.push(`Filtrando publicações`);
-
-            const keywords = ['procuradoria', 'prefeitura', 'municipio'];
-
-            this.publicacoes_filtradas = this.publicacoes.filter(pub => {
+            this.publicacoesFiltradas = this.publicacoes.filter(pub => {
                 return pub.destinatarios.some(dest => {
 
                     const nome = dest.nome.toLowerCase()
                         .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
                         .replace('-', ' ');
 
-                    const input = this.form.nome_parte.toLowerCase()
+                    const input = this.form.nomeParte.toLowerCase()
                         .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
                         .replace('-', ' ');
 
@@ -73,20 +74,17 @@ document.addEventListener("alpine:init", () => {
                         return false;
                     }
 
-                    return keywords.some(keyword => nome.includes(keyword));
+                    return this.keywords.some(keyword => nome.includes(keyword));
                 })
             })
-
-            this.logs.push(`${this.publicacoes_filtradas.length} publicações filtradas`);
         },
 
         async salvar() {
-            this.logs.push(`Salvando em arquivo .docx`);
             const parser = new DOMParser();
 
             let blocks = '';
 
-            this.publicacoes_filtradas.forEach(pub => {
+            this.publicacoesFiltradas.forEach(pub => {
                 blocks += `
                     <p>
                         <span class="publicacao-title">Processo ${pub.numeroprocessocommascara}</span><br>
@@ -100,7 +98,6 @@ document.addEventListener("alpine:init", () => {
                         ${pub.destinatarios.map( dest => `<span>${dest.nome}<span><br>`).join('')}
                         ${pub.destinatarioadvogados.length ? `<span><strong>Advogado(s): </strong></span><br>` : ''}
                         ${pub.destinatarioadvogados.length ? pub.destinatarioadvogados.map( dest => `<span>${dest.advogado.nome} - OAB ${dest.advogado.uf_oab}-${dest.advogado.numero_oab}<span><br>`).join('') : ''}
-                        <br>
                         <section">${pub.texto}</section><br>
                         <br>
                     </p>
@@ -135,7 +132,7 @@ document.addEventListener("alpine:init", () => {
             const docxBlob = await converter(html);
             fileSaver.saveAs(docxBlob, `publicações-${moment().format('DD-MM-YYYY')}.docx`);
 
-            this.logs.push(`Concluído!`);
+      
         },
     }));
 });

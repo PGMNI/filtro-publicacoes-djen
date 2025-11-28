@@ -19,13 +19,13 @@
             <hr>
             <!-- form -->
             <form role="search" @submit.prevent="submit()">
-                <input name="nome_parte" type="search" placeholder="Nome da Parte" x-model="form.nome_parte" />
+                <input name="nome_parte" type="search" placeholder="Nome da Parte" x-model="form.nomeParte" />
                 <input type="submit" value="Pesquisar" />
             </form>
 
             <div>
                 <label for="data_publicacao">Data da publicação</label>
-                <input type="date" name="data_publicacao" x-model="form.data_publicacao" />
+                <input type="date" name="data_publicacao" x-model="form.dataPublicacao" />
             </div>
 
             <div>
@@ -39,10 +39,11 @@
              </div>
 
             <article class="log-box" id="box">
-                <template x-for="log in logs">
-                    ✓
-                    <p x-text="log" class="col-12 mt-1 log"></p>
-                    <hr>
+                <template x-for="log in logger.logs">
+                    <p class="log">
+                        <span x-text="log.icon"></span>
+                        <span  x-text="log.msg"></span>
+                    </p>
                 </template>
             </article>
         </article>
