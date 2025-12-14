@@ -1,5 +1,10 @@
 @import url("https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css");
 
+:root {
+    --pico-form-element-spacing-vertical: 0.25rem;
+    --pico-form-element-spacing-horizontal: 0.5rem;
+}
+
 html, body, main {
     height: 100dvh;
 }
@@ -12,11 +17,15 @@ main {
 
 #card {
     width: 100%;
+    margin-bottom: 0px;
 }
 
 .log-box {
     background-color: #13171F;
-    height: 400px;
+    min-height: 200px;
+    height: auto;
+    max-height: 330px;
+    overflow-y: scroll;
     border-radius: 6px;
     padding: 24px;
     overflow-y: auto;
@@ -24,4 +33,7 @@ main {
 
 .log {
     font-family: 'Courier New', Courier, monospace;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 1rem;
 }
