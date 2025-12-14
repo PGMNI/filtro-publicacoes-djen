@@ -1,8 +1,10 @@
 import axios from 'https://cdn.jsdelivr.net/npm/axios@1.13.2/+esm'
+import axiosRetry from 'https://cdn.jsdelivr.net/npm/axios-retry@4.5.0/+esm'
+
+const client = axios.create({ baseURL: 'https://comunicaapi.pje.jus.br/api/v1' });
+axiosRetry(client, { retries: 6, retryDelay: axiosRetry.exponentialDelay });
 
 const djen = {
-
-    baseUrl: 'https://comunicaapi.pje.jus.br/api/v1',
 
     async publicacoes({ nomeParte, dataDisponibilizacaoInicio, dataDisponibilizacaoFim } = {}) {
 
@@ -12,7 +14,7 @@ const djen = {
         let publicacoes = []
 
         do {
-            let response = await axios.get(`${this.baseUrl}/comunicacao`, {
+            let response = await client.get(`/comunicacao`, {
                 params: {
                     nomeParte: nomeParte,
                     dataDisponibilizacaoInicio: dataDisponibilizacaoInicio,
