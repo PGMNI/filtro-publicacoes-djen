@@ -2,7 +2,18 @@ import axios from 'https://cdn.jsdelivr.net/npm/axios@1.13.2/+esm'
 import axiosRetry from 'https://cdn.jsdelivr.net/npm/axios-retry@4.5.0/+esm'
 
 const client = axios.create({ baseURL: 'https://comunicaapi.pje.jus.br/api/v1' });
-axiosRetry(client, { retries: 6, retryDelay: axiosRetry.exponentialDelay });
+axiosRetry(client, { 
+    retries: 6, 
+    retryDelay: (retryCount, error) => { 
+        console.log(error);
+        if(error.response?.status === 429) {
+            console.warn('Erro 429 recebido. Aguardando 1 minuto...');
+            return 60_000;
+        }
+
+        return 3000;
+    } 
+});
 
 const djen = {
 
@@ -12,6 +23,7 @@ const djen = {
         let pagina = 1;
         let items = [];
         let publicacoes = []
+        let count = 0;
 
         do {
             let response = await client.get(`/comunicacao`, {
@@ -24,9 +36,10 @@ const djen = {
                 }
             });
             items = response.data.items;
+            count = response.data.count;
             publicacoes.push(...items);
             ++pagina
-        } while (items.length !== 0 || items.length === limite);
+        } while (publicacoes.length < count);
 
         return publicacoes;
     }
