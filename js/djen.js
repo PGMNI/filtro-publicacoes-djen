@@ -19,7 +19,7 @@ const djen = {
 
     async publicacoes({ nomeParte, dataDisponibilizacaoInicio, dataDisponibilizacaoFim } = {}) {
 
-        const limite = 100;
+        const limite = 200;
         let pagina = 1;
         let items = [];
         let publicacoes = []
@@ -36,6 +36,7 @@ const djen = {
             });
             items = response.data.items;
             publicacoes.push(...items);
+            console.log(publicacoes.length, items.length);
             ++pagina
         } while (items.length);
 
