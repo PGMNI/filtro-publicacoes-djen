@@ -23,7 +23,6 @@ const djen = {
         let pagina = 1;
         let items = [];
         let publicacoes = []
-        let count = 0;
 
         do {
             let response = await client.get(`/comunicacao`, {
@@ -36,10 +35,9 @@ const djen = {
                 }
             });
             items = response.data.items;
-            count = response.data.count;
             publicacoes.push(...items);
             ++pagina
-        } while (publicacoes.length < count);
+        } while (items.length);
 
         return publicacoes;
     }
